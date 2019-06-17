@@ -3,7 +3,7 @@
 
 ## 简介
 * 可用[爬虫](https://github.com/CrawlScript/WebCollector)爬取[民政部](http://www.mca.gov.cn/article/sj/xzqh/)最新的行政区划代码。(不调用爬虫，默认使用 2019 年 5月份的数据)
-* 部分民政部缺失的数据利用高德的 API 补充（香港，台湾，澳门的区域信息，和部分城市没有区直接到镇）
+* 部分民政部缺失的数据利用高德的 API 补充（香港，澳门的区域信息，和部分城市没有区直接到镇）
 * 利用 [GB2260.java](https://github.com/cn/GB2260.java) 来实现区划代码的使用
 
 ## Usage

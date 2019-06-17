@@ -29,20 +29,19 @@ public class AmapUtils {
 			String queryResults = HttpUtils.doGet("http://restapi.amap.com/v3/config/district", params);
 			JSONObject jsonObject = JSONObject.parseObject(queryResults);
 			JSONObject queryDistrict = (JSONObject) jsonObject.getJSONArray("districts").get(0);
+			String parentCode;
 			if (code.endsWith("0000")) {
-				result.add(String.format(SINGLE_LINE_FORMAT, code.substring(0, 2) + "0100",
-						queryDistrict.getString("name")));
+				parentCode = code.substring(0, 2) + "0100";
+				result.add(String.format(SINGLE_LINE_FORMAT, parentCode, queryDistrict.getString("name")));
+			} else {
+				parentCode = code;
 			}
 			JSONArray districts = queryDistrict.getJSONArray("districts");
 			for (int i = 0; i < districts.size(); i++) {
 				JSONObject districtJSONObject = (JSONObject) districts.get(i);
-				String adCode = districtJSONObject.getString("adcode");
 				String name = districtJSONObject.getString("name");
-				if (adCode.equals(code)) {
-					adCode = String.valueOf(Integer.valueOf(adCode) + i + 1);
-				}
-                result.add(String.format(SINGLE_LINE_FORMAT, adCode,
-                        name));
+				String adCode = String.valueOf(Integer.valueOf(parentCode) + i + 1);
+				result.add(String.format(SINGLE_LINE_FORMAT, adCode, name));
 			}
 		}
 		return result;
