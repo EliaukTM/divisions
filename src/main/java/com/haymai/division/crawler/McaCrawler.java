@@ -121,13 +121,16 @@ public class McaCrawler extends BreadthCrawler {
             if (!StringUtil.isBlank(code) && !StringUtil.isBlank(name) && StringUtil.isNumeric(code)
                     && code.length() == 6) {
                 if (code.endsWith("00")) {
-                    if ((lastCode.endsWith("0000") && code.endsWith("0000"))) {
-                        needExtractDivisions.add(lastCode);
-                    }
-                    if (lastCode.endsWith("00") && !lastCode.endsWith("0000")) {
-                        needExtractDivisions.add(lastCode);
-                    }
                     prefectureCodes.add(code);
+                }
+                if (lastCode.endsWith("00")) {
+                    if (lastCode.endsWith("00") && !lastCode.endsWith("0000")
+                            && !code.substring(0, 4).equals(lastCode.substring(0, 4))) {
+                        needExtractDivisions.add(lastCode);
+                    }
+                    if (lastCode.endsWith("0000") && !code.substring(0, 2).equals(lastCode.substring(0, 2))) {
+                        needExtractDivisions.add(lastCode);
+                    }
                 }
                 lastCode = code;
                 String parentPrefectureCode = code.substring(0, 4) + "00";
