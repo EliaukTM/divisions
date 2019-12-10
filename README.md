@@ -10,7 +10,7 @@
 
 ### 引入依赖
 ```shell
-mvn clean package
+mvn clean install
 ```
 
 ```xml
