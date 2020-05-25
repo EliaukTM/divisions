@@ -1,5 +1,17 @@
 package com.haymai.division.crawler;
 
+import cn.edu.hfut.dmic.webcollector.model.CrawlDatum;
+import cn.edu.hfut.dmic.webcollector.model.CrawlDatums;
+import cn.edu.hfut.dmic.webcollector.model.Page;
+import cn.edu.hfut.dmic.webcollector.plugin.net.OkHttpRequester;
+import cn.edu.hfut.dmic.webcollector.plugin.rocks.BreadthCrawler;
+import com.haymai.division.DivisionFileUtils;
+import com.haymai.division.crawler.utils.AmapUtils;
+import okhttp3.Request;
+import org.jsoup.helper.StringUtil;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,20 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.helper.StringUtil;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.haymai.division.DivisionFileUtils;
-import com.haymai.division.crawler.utils.AmapUtils;
-
-import cn.edu.hfut.dmic.webcollector.model.CrawlDatum;
-import cn.edu.hfut.dmic.webcollector.model.CrawlDatums;
-import cn.edu.hfut.dmic.webcollector.model.Page;
-import cn.edu.hfut.dmic.webcollector.plugin.net.OkHttpRequester;
-import cn.edu.hfut.dmic.webcollector.plugin.rocks.BreadthCrawler;
-import okhttp3.Request;
 
 /**
  * Description: 中国行政区划爬虫，来源于民政部 <br/>
@@ -39,11 +37,9 @@ public class McaCrawler extends BreadthCrawler {
     private static final Pattern REAL_PAGE_URL = Pattern.compile(".*?window.location.href=\"(.*?)\"(.*?)",
             Pattern.DOTALL);
 
-    private static final String SHTML_FORMAT = "%s(\\d+)/(\\d+)/(\\d+).shtml";
+    private static final String SHTML_FORMAT = ".*?/(\\d+).shtml";
 
-    private static final String HTML_FORMAT = "%s(\\d+)/(\\d+)-(\\d+)/(\\d+).html";
-
-    private static final Pattern URL_CODE = Pattern.compile(String.format(HTML_FORMAT, START_URL));
+    private static final Pattern URL_CODE = Pattern.compile(".*?/(\\d+).html");
 
     public static final String SINGLE_LINE_FORMAT = "%s\t%s";
 
@@ -66,10 +62,8 @@ public class McaCrawler extends BreadthCrawler {
     }
 
     /**
-     * @param crawlPath
-     *            crawlPath is the path of the directory which maintains information of this crawler
-     * @param autoParse
-     *            if autoParse is true,BreadthCrawler will auto extract links which match regex rules from pag
+     * @param crawlPath crawlPath is the path of the directory which maintains information of this crawler
+     * @param autoParse if autoParse is true,BreadthCrawler will auto extract links which match regex rules from pag
      */
     public McaCrawler(String crawlPath, boolean autoParse, String amapKey) {
         super(crawlPath, autoParse);
@@ -89,7 +83,7 @@ public class McaCrawler extends BreadthCrawler {
     @Override
     public void visit(Page page, CrawlDatums next) {
         /* if page is news page */
-        if (page.matchUrl(String.format(SHTML_FORMAT, START_URL))) {
+        if (page.matchUrl(SHTML_FORMAT)) {
             Matcher matcher = REAL_PAGE_URL.matcher(page.html());
             if (matcher.matches()) {
                 next.add(matcher.group(1));
@@ -100,7 +94,7 @@ public class McaCrawler extends BreadthCrawler {
         if (!matcher.matches()) {
             return;
         }
-        String fileCode = matcher.group(4);
+        String fileCode = matcher.group(1);
         // 文件已存在不爬了
         if (DivisionFileUtils.isFileExists(fileCode)) {
             return;
@@ -147,6 +141,9 @@ public class McaCrawler extends BreadthCrawler {
                     prefectureCodes.add(parentPrefectureCode);
                 }
                 result.add(String.format(SINGLE_LINE_FORMAT, code, name));
+                if (code.endsWith("00") && !code.endsWith("0000")) {
+                    result.add(String.format(SINGLE_LINE_FORMAT, code.substring(0, 4) + "99", "其他区"));
+                }
                 if (code.endsWith("0000")) {
                     provinces.put(code, name);
                 }
@@ -155,6 +152,7 @@ public class McaCrawler extends BreadthCrawler {
                     String code1;
                     code1 = code.substring(0, 2) + "0100";
                     result.add(String.format(SINGLE_LINE_FORMAT, code1, name));
+                    result.add(String.format(SINGLE_LINE_FORMAT, code.substring(0, 2) + "0199", "其他区"));
                     prefectureCodes.add(code1);
                 }
             }
@@ -185,4 +183,5 @@ public class McaCrawler extends BreadthCrawler {
         crawler.start(4);
     }
 
+ 
 }
